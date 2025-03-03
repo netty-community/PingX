@@ -20,40 +20,28 @@ A high-performance, concurrent network monitoring tool built in Go that provides
 
 ## Quick Start
 
-### Prerequisites
-
-- Go 1.19 or later
-- Modern web browser
-
 ### Installation
-
+Download [Latest Release](https://github.com/netty-community/PingX/releases/download/lastest/pingx-macos-amd64.tar.gz)
 ```bash
-git clone https://github.com/netty-community/pingx.git
-cd pingx
-go mod download
+$ tar -xf pingx-macos-amd64.tar.gz pingx
+$ rm pingx-macos-amd64.tar.gz
+$ cd pingx
+$ ./pingx
 ```
-
-### Running PingX
-
-```bash
-go run main.go
-```
-
-The web interface will be available at `http://localhost:8080` by default.
 
 ## Configuration
 
-PingX can be configured through environment variables or configuration files. Key configuration options include:
+PingX can be configured through web page `ICMP Options`. Key configuration options include:
 
 - `interval`: Time between ping operations (milliseconds)
 - `count`: Number of ping packets to send
-- `timeout`: Ping timeout duration (milliseconds)
-- `size`: Size of ping packets
-- `wait`: Wait time between ping sequences
-- `max_store_logs`: Maximum number of historical ping logs to retain
-- `max_concurrent_probes`: Maximum number of concurrent ping operations
-- `skip_cidr_first_addr`: Skip first address in CIDR ranges
-- `skip_cidr_last_addr`: Skip last address in CIDR ranges
+- `Timeout`: Ping timeout duration (seconds)
+- `Packet Size`: Size of ping packets
+- `Wait Interval`: Wait time between ping sequences
+- `Max Store Logs`: Maximum number of historical ping logs to retain
+- `Max Concurrent Probes`: Maximum number of concurrent ping operations
+- `Skip CIDR First Addr`: Skip first address in CIDR ranges
+- `Skip CIDR Last Addr`: Skip last address in CIDR ranges
 
 ## API Endpoints
 

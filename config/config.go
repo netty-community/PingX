@@ -24,8 +24,8 @@ func Init() *ProbeConfig {
 		Wait:                1,     // 1 second wait between probe sets
 		MaxStoreLogs:        100,   // Maximum number of logs to store
 		MaxConcurrentProbes: 100,   // Maximum concurrent pings
-		SkipCidrFirstAddr:   false, // Don't skip first address in CIDR range
-		SkipCidrLastAddr:    false, // Don't skip last address in CIDR range
+		SkipCidrFirstAddr:   true, // Don't skip first address in CIDR range
+		SkipCidrLastAddr:    true, // Don't skip last address in CIDR range
 	}
 	Config = &settings
 	return Config

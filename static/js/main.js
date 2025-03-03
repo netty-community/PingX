@@ -9,12 +9,30 @@ let currentSort = {
 
 function startPing() {
     const hostsText = document.getElementById('hosts-input').value;
-    const hosts = hostsText.split('\n').filter(host => host.trim() !== '');
+    let hosts = hostsText.split('\n')
+        .map(host => host.trim())
+        .filter(host => host !== '');
     
     if (hosts.length === 0) {
         showAlert('Please enter at least one host', 'danger');
         return;
     }
+
+    // Validate each host
+    const invalidHosts = hosts.filter(host => !isValidHost(host));
+    if (invalidHosts.length > 0) {
+        showAlert(`Invalid host(s): ${invalidHosts.join(', ')}. Please enter valid IPv4, IPv6, or domain names.`, 'danger');
+        return;
+    }
+    const form = document.getElementById('pingOptionsForm');
+    const skipFirst = form.skip_cidr_first_addr.checked;
+    const skipLast = form.skip_cidr_last_addr.checked;
+
+    // Convert CIDR addresses to IP list
+    hosts = hosts.flatMap(host => 
+        isValidIPv4Network(host) ? cidrToIPList(host, skipFirst, skipLast) : host
+    );
+    
 
     togglePingState(true);
     showAlert('Starting ping monitoring...', 'info');
@@ -404,11 +422,48 @@ function formatDuration(ns) {
 }
 
 function showAlert(message, type = 'success') {
+    const alertStyles = {
+        success: {
+            background: '#d1e7dd',
+            color: '#0a3622',
+            fontSize: '1rem'
+        },
+        warning: {
+            background: '#fff3cd',
+            color: '#664d03',
+            fontSize: '1.1rem',
+            fontWeight: '500'
+        },
+        danger: {
+            background: '#f8d7da',
+            color: '#842029',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            borderLeft: '5px solid #842029'
+        },
+        info: {
+            background: '#cff4fc',
+            color: '#055160',
+            fontSize: '1rem'
+        }
+    };
+
+    const style = alertStyles[type];
+    const styleString = Object.entries(style)
+        .map(([key, value]) => `${key}:${value}`)
+        .join(';');
+
     const alertHTML = `
-        <div class="alert alert-${type} alert-dismissible" role="alert">
-            <div class="d-flex">
-                <div>${message}</div>
-                <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+        <div class="alert alert-${type} alert-dismissible" role="alert" 
+             style="padding: 1rem 1.5rem; ${styleString}; box-shadow: 0 2px 4px rgba(0,0,0,0.1)">
+            <div class="d-flex align-items-center">
+                <div style="flex-grow: 1">
+                    ${type === 'danger' || type === 'warning' ? 
+                      `<strong style="margin-right: 0.5rem">⚠️</strong>` : ''}
+                    ${message}
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"
+                        style="font-size: 1.2rem; padding: 1rem 1rem"></button>
             </div>
         </div>
     `;
@@ -416,21 +471,27 @@ function showAlert(message, type = 'success') {
     let alertContainer = document.querySelector('.alert-container');
     if (!alertContainer) {
         alertContainer = document.createElement('div');
-        alertContainer.className = 'alert-container container-xl my-2';
-        document.querySelector('.page-wrapper').insertBefore(
-            alertContainer,
-            document.querySelector('.page-body')
-        );
+        alertContainer.className = 'alert-container container-xl my-3';
+        alertContainer.style.position = 'fixed';
+        alertContainer.style.top = '20px';
+        alertContainer.style.left = '50%';
+        alertContainer.style.transform = 'translateX(-50%)';
+        alertContainer.style.zIndex = '1050';
+        alertContainer.style.width = '100%';
+        alertContainer.style.maxWidth = '600px';
+        document.body.appendChild(alertContainer);
     }
     
     alertContainer.insertAdjacentHTML('beforeend', alertHTML);
     
+    // Remove alert after 5 seconds for success/info, 8 seconds for warning/danger
+    const timeout = (type === 'success' || type === 'info') ? 5000 : 8000;
     setTimeout(() => {
         const alerts = alertContainer.getElementsByClassName('alert');
         if (alerts.length > 0) {
             alerts[0].remove();
         }
-    }, 5000);
+    }, timeout);
 }
 
 function initChart() {
@@ -505,13 +566,14 @@ function loadPingOptions() {
     .then(config => {
         // Populate form with current config
         const form = document.getElementById('pingOptionsForm');
+        form.count.value = config.count || 4;
         form.timeout.value = config.timeout || 2;
         form.size.value = config.size || 56;
         form.wait.value = config.wait || 1;
         form.max_store_logs.value = config.max_store_logs || 100;
         form.max_concurrent_probes.value = config.max_concurrent_probes || 100;
-        form.skip_cidr_first_addr.checked = config.skip_cidr_first_addr || false;
-        form.skip_cidr_last_addr.checked = config.skip_cidr_last_addr || false;
+        form.skip_cidr_first_addr.checked = config.skip_cidr_first_addr || true;
+        form.skip_cidr_last_addr.checked = config.skip_cidr_last_addr || true;
     })
     .catch(error => {
         console.error('Error loading config:', error);
@@ -524,6 +586,7 @@ function updatePingOptions(event) {
     
     const form = event.target;
     const config = {
+        count: parseInt(form.count.value),
         timeout: parseInt(form.timeout.value),
         size: parseInt(form.size.value),
         wait: parseInt(form.wait.value),
@@ -555,6 +618,8 @@ function updatePingOptions(event) {
     });
 }
 
+
+
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('startPing').addEventListener('click', startPing);
     document.getElementById('stopPing').addEventListener('click', stopPing);
@@ -571,3 +636,65 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+
+// Host validation functions
+function isValidIPv4(ip) {
+    return /^(25[0-5]|2[0-4][0-9]|1?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|1?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|1?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|1?[0-9][0-9]?)$/.test(ip);
+}
+
+function isValidIPv6(ip) {
+    return /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9])?[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9])?[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9])?[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9])?[0-9]))$/.test(ip);
+}
+
+function isValidDomain(domain) {
+    return /^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z]{2,6})+$/.test(domain);
+}
+
+
+function isValidHost(host) {
+    return isValidIPv4(host) || isValidIPv6(host) || isValidDomain(host) || isValidIPv4Network(host);
+}
+
+function isValidIPv4Network(cidr) {
+    if (cidr.includes("/")) {
+       const parts = cidr.split("/");
+       const ip = parts[0];
+       const prefix = parts[1];
+       return isValidIPv4(ip) && prefix >= 0 && prefix <= 32;
+    }
+    return false;
+}
+function ipToLong(ip) {
+    return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0;
+}
+
+function longToIp(long) {
+    return [(long >>> 24) & 255, (long >>> 16) & 255, (long >>> 8) & 255, long & 255].join('.');
+}
+
+function cidrToIPList(cidr, skipFirst = false, skipLast = false) {
+
+    const [ip, mask] = cidr.split('/');
+    const ipLong = ipToLong(ip);
+    const subnetMask = 0xFFFFFFFF << (32 - mask) >>> 0;
+
+    const networkAddress = ipLong & subnetMask;
+    const broadcastAddress = networkAddress | (~subnetMask >>> 0);
+
+    let ipList = [];
+
+    for (let i = networkAddress; i <= broadcastAddress; i++) {
+        ipList.push(longToIp(i));
+    }
+
+    // 处理跳过第一个IP（网络地址）和最后一个IP（广播地址）
+    if (skipFirst && ipList.length > 1) {
+        ipList.shift();
+    }
+    if (skipLast && ipList.length > 1) {
+        ipList.pop();
+    }
+
+    return ipList;
+}
