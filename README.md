@@ -16,6 +16,7 @@ A high-performance, concurrent network monitoring tool built in Go that provides
 
 ## ScreeShot
 ![PingX Demo](/docs/demo.png)
+![PingX Details](/docs/detail.png)
 
 ## Quick Start
 
