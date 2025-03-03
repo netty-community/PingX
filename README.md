@@ -14,7 +14,7 @@ A high-performance, concurrent network monitoring tool built in Go that provides
 - **CIDR Support**: Optional first/last address skipping for CIDR ranges
 - **Web Interface**: Built-in web UI for real-time monitoring
 
-## Planning
+## Roadmap
 - **TCP Ping Support**: Support target TCP port status and latency checking
 - **UDP Ping Support**: Support target UDP port status and latency checking
 
