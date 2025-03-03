@@ -1,0 +1,33 @@
+name: Release Build
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.24'
+          cache: true
+      
+      - name: Build macOS Binary
+        run: |
+          go build -v -o dist/pingx-macos-amd64 main.go
+          chmod +x dist/pingx-macos-amd64
+          tar -czf dist/pingx-macos-amd64.tar.gz -C dist pingx-macos-amd64
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./dist/pingx-macos-amd64.tar.gz
+          asset_name: pingx-macos-amd64.tar.gz
+          asset_content_type: application/gzip
