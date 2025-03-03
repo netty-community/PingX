@@ -569,7 +569,7 @@ function loadPingOptions() {
         form.count.value = config.count || 4;
         form.timeout.value = config.timeout || 2;
         form.size.value = config.size || 56;
-        form.wait.value = config.wait || 1;
+        form.wait.value = config.wait || 5;
         form.max_store_logs.value = config.max_store_logs || 100;
         form.max_concurrent_probes.value = config.max_concurrent_probes || 100;
         form.skip_cidr_first_addr.checked = config.skip_cidr_first_addr || true;

@@ -21,7 +21,7 @@ func Init() *ProbeConfig {
 		Count:               4,     // Number of pings per probe
 		Timeout:             2,     // 2 seconds timeout
 		Size:                56,    // Standard ICMP echo size
-		Wait:                1,     // 1 second wait between probe sets
+		Wait:                5,     // 5 second wait between probe sets
 		MaxStoreLogs:        100,   // Maximum number of logs to store
 		MaxConcurrentProbes: 100,   // Maximum concurrent pings
 		SkipCidrFirstAddr:   true, // Don't skip first address in CIDR range

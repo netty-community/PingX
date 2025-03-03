@@ -7,7 +7,7 @@ A high-performance, concurrent network monitoring tool built in Go that provides
 ## Features
 
 - **High Performance**: Concurrent ping operations with configurable concurrency limits
-- **Real-time Statistics**: Track min/max/avg latency, packet loss, and standard deviation
+- **Real-time Statistics**: Track min/max/avg latency, packet loss, and standard deviation latency
 - **Continuous Monitoring**: Automated periodic ping checks with configurable intervals
 - **History Tracking**: Maintains historical ping data with configurable retention
 - **Multiple Target Support**: Monitor multiple hosts simultaneously
@@ -21,7 +21,7 @@ A high-performance, concurrent network monitoring tool built in Go that provides
 ## Quick Start
 
 ### Installation
-Download [Latest Release](https://github.com/netty-community/PingX/releases/download/lastest/pingx-macos-amd64.tar.gz)
+Download `pingx-macos-amd64.tar.gz` from [Release Pages](https://github.com/netty-community/PingX/releases)
 ```bash
 $ tar -xf pingx-macos-amd64.tar.gz pingx
 $ rm pingx-macos-amd64.tar.gz
