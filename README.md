@@ -2,6 +2,8 @@
 
 A high-performance, concurrent network monitoring tool built in Go that provides real-time ping statistics and monitoring capabilities.
 
+> Since PingInfoView is not available for macOS, PingX was created as a powerful alternative for macOS users who need a reliable network monitoring tool. It offers similar functionality with additional features like concurrent monitoring trend display, all through a modern web interface.
+
 ## Features
 
 - **High Performance**: Concurrent ping operations with configurable concurrency limits
