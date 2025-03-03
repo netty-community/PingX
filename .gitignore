@@ -1,0 +1,41 @@
+# Go specific
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+/vendor/
+
+# IDE specific
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Binary output
+/bin/
+/dist/
+
+# Debug files
+debug
+*.debug
+
+# Log files
+*.log
+
+# Environment files
+.env
+.env.local
+
+# Build output
+build/
+
+# Test coverage
+coverage.txt
+coverage.html
+
+# Project specific
+/tmp/
